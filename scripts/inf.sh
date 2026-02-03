@@ -3,7 +3,7 @@
 set -euo pipefail
 
 # running inference for baseline
-python evaluate.py \
+uv run python -m scripts.evaluate \
 	--model UsefulSensors/moonshine-tiny \
 	--dataset KoelLabs/L2Arctic \
 	--split test \
