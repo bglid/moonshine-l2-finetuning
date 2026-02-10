@@ -7,7 +7,7 @@
 ---
 dataset:
   # HuggingFace dataset name or path to local dataset
-  # name: "KoelLabs/L2Arctic"
+  name: "KoelLabs/L2Arctic"
   type: l2arctic
 
   # Language code (for multilingual datasets)
@@ -58,7 +58,7 @@ training:
   learning_rate: 2e-5
 
   # Learning rate warmup
-  warmup_steps: 500
+  warmup_steps: 100
 
   # Logging frequency
   logging_steps: 50
