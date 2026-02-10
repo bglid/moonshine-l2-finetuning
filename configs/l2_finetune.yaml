@@ -1,20 +1,20 @@
 # Adapted from: https://github.com/pierre-cheneau/finetune-moonshine-asr/blob/main/configs/example_config.yaml
 # Moonshine Fine-Tuning Configuration Example
 # This file shows all available options with explanations
-
 # =============================================================================
 # DATASET CONFIGURATION
 # =============================================================================
+---
 dataset:
   # HuggingFace dataset name or path to local dataset
-  name: "KoelLabs/L2Arctic"
+  # name: "KoelLabs/L2Arctic"
+  type: l2arctic
 
   # Language code (for multilingual datasets)
   language: "english"
 
   # Dataset splits to use
-  train_split: "train"
-  test_split: "test"
+  train_percent: 0.9
 
   # Column names in your dataset
   audio_column: "audio" # Column containing audio files
@@ -42,7 +42,7 @@ model:
 # =============================================================================
 training:
   # Output directory for checkpoints and logs
-  output_dir: "./baseline-results-moonshine-l2arctic"
+  output_dir: "./results-moonshine-l2arctic"
 
   # Number of training epochs
   num_train_epochs: 2

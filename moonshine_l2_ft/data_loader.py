@@ -36,6 +36,55 @@ class MoonshineDataLoader:
         self.config = config or {}
         self.sampling_rate = sampling_rate
 
+    def load_l2arctic(
+        self,
+        train_percent: float = 0.88,
+        seed: int = 42,
+        cache_dir: Optional[str] = None,
+    ) -> DatasetDict:
+        """
+        Load KoelLabs L2Arctic and create train/test split from scripted subset.
+
+        Args:
+            train_fraction: Fraction used for training (default 0.88)
+            seed: Random seed for reproducibility
+            cache_dir: HuggingFace cache directory
+
+        Returns:
+            DatasetDict with train/test splits
+        """
+
+        print("\nLoading L2Arctic")
+        ds = load_dataset("KoelLabs/L2Arctic", cache_dir=cache_dir)
+
+        print(f"Available splits: {list(ds.keys())}")
+        combined = concatenate_datasets([])
+        scripted_speech = ds["scripted"]
+        spont_speech = ds["spontaneous"]
+
+        split_data = scripted_speech.train_test_split(
+            test_size= 1 - train_percent, seed = seed
+        )
+
+        dataset_dict = DatasetDict({
+            "train": split_data["train"],
+            "test": split_data["test"],
+        })
+
+        # renaming from text to sentence to match rest of setup
+        if "text" in dataset_dict["train"].column_names:
+            dataset_dict = dataset_dict.rename_column("text", "sentence")
+
+        dataset_dict = dataset_dict.cast_column("audio", Audio(sampling_rate=self.sampling_rate))
+
+        dataset_dict.save_to_disk("./data/l2arctic_split")
+
+        print("L2Artic Dataset loaded:\n")
+        print(f"\tTrain samples: {len(dataset_dict['train']):,}")
+        print(f"\tTest samples: {len(dataset_dict['test']):,}")
+
+        return dataset_dict
+
     def load_common_voice(
         self,
         language: str,
@@ -359,6 +408,7 @@ class MoonshineDataLoader:
         """
         dataset_config = self.config.get("dataset", {})
         dataset_type = dataset_config.get("type", "common_voice")
+        dataset_name = dataset_config.get("name", "")
 
         if dataset_type == "common_voice":
             return self.load_common_voice(
@@ -387,6 +437,12 @@ class MoonshineDataLoader:
                 language=dataset_config.get("language", "french"),
                 split_train=dataset_config.get("split_train", "train"),
                 split_test=dataset_config.get("split_test", "test"),
+                cache_dir=dataset_config.get("cache_dir"),
+            )
+        elif dataset_type == "l2arctic" or dataset_name == "KoelLabs/L2Arctic":
+            return self.load_l2arctic(
+                train_percent=dataset_config.get("train_percent", 0.9),
+                seed=dataset_config.get("seed", 42),
                 cache_dir=dataset_config.get("cache_dir"),
             )
         elif dataset_type == "local":
